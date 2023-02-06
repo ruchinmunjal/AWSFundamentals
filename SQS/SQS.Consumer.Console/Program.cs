@@ -5,11 +5,12 @@ using Amazon.SQS;
 using Amazon.SQS.Model;
 using System.Text.Json;
 
+var queueName = args.Length == 1 ? args[0] : "customers";
 var cts = new CancellationTokenSource();
 
 
 var sqsClient = new AmazonSQSClient(RegionEndpoint.EUWest2);
-var queueUrlResponse = await sqsClient.GetQueueUrlAsync("customers");
+var queueUrlResponse = await sqsClient.GetQueueUrlAsync(queueName);
 var queueUrl = queueUrlResponse.QueueUrl;
 
 var receivedMessageRequest = new ReceiveMessageRequest
@@ -22,7 +23,7 @@ var receivedMessageRequest = new ReceiveMessageRequest
 while (!cts.IsCancellationRequested)
 {
     var response = await sqsClient.ReceiveMessageAsync(receivedMessageRequest,cts.Token);
-    if (response != null)
+    if (response != null && response.Messages.Count != 0)
     {
         foreach (var message in response.Messages)
         {
